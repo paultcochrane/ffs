@@ -10,16 +10,17 @@ Usage:
     ffs --debug [stop|cont|status]
 =end pod
 
-sub MAIN($change-cmd = "stop") {
+sub MAIN($change-cmd = "stop", :$debug = False) {
     # extract iceweasel's process information
     my $process-info = qx{ps -u cochrane -o pid,state,command | grep '\siceweasel' | grep -v grep}.trim;
+    say "Process info: $process-info" if $debug;
     my ($process-id, $process-state, $process-command) = $process-info.split(/\s+/);
 
     my $state-change = $change-cmd eq "cont" ?? "CONT" !! "STOP";
 
     # change the process' state
     my $kill-command = "kill -$state-change $process-id";
-    qqx{$kill-command};
+    $debug ?? say "Kill command: $kill-command" !! qqx{$kill-command};
 }
 
 # vim: expandtab shiftwidth=4 ft=perl6
