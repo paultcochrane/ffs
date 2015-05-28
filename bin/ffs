@@ -10,22 +10,29 @@ Usage:
     ffs --debug [stop|cont|status]
 =end pod
 
+our $debug;
+
 sub MAIN($ffs-cmd = "stop", :$debug = False) {
-    # extract iceweasel's process information
+    say "ffs command: $ffs-cmd" if $debug;
+
     my $process-info = qx{ps -u cochrane -o pid,state,command | grep '\siceweasel' | grep -v grep}.trim;
     say "Process info: $process-info" if $debug;
     my ($process-id, $process-state, $process-command) = $process-info.split(/\s+/);
 
-    if $ffs-cmd eq "status" {
-        $process-state eq "T" ?? say "Status: on hold" !! say "Status: running";
-    }
-    else {
-        my $state-change = $ffs-cmd eq "cont" ?? "CONT" !! "STOP";
+    $ffs-cmd eq "status"
+        ?? print-status($process-state)
+        !! change-process-state($process-id, $ffs-cmd);
+}
 
-        # change the process' state
-        my $kill-command = "kill -$state-change $process-id";
-        $debug ?? say "Kill command: $kill-command" !! qqx{$kill-command};
-    }
+sub print-status($process-state) {
+    $process-state eq "T" ?? say "Status: on hold" !! say "Status: running";
+}
+
+sub change-process-state($process-id, $ffs-cmd) {
+    my $state-change = $ffs-cmd eq "cont" ?? "CONT" !! "STOP";
+
+    my $kill-command = "kill -$state-change $process-id";
+    $debug ?? say "Kill command: $kill-command" !! qqx{$kill-command};
 }
 
 # vim: expandtab shiftwidth=4 ft=perl6
