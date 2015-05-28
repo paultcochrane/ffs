@@ -16,11 +16,16 @@ sub MAIN($ffs-cmd = "stop", :$debug = False) {
     say "Process info: $process-info" if $debug;
     my ($process-id, $process-state, $process-command) = $process-info.split(/\s+/);
 
-    my $state-change = $ffs-cmd eq "cont" ?? "CONT" !! "STOP";
+    if $ffs-cmd eq "status" {
+        $process-state eq "T" ?? say "Status: on hold" !! say "Status: running";
+    }
+    else {
+        my $state-change = $ffs-cmd eq "cont" ?? "CONT" !! "STOP";
 
-    # change the process' state
-    my $kill-command = "kill -$state-change $process-id";
-    $debug ?? say "Kill command: $kill-command" !! qqx{$kill-command};
+        # change the process' state
+        my $kill-command = "kill -$state-change $process-id";
+        $debug ?? say "Kill command: $kill-command" !! qqx{$kill-command};
+    }
 }
 
 # vim: expandtab shiftwidth=4 ft=perl6
