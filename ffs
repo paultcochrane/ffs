@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# FFS: Firefox Stop; stops or continues a firefox process
+#
+# Usage: ffs [stop|cont|status]
+
+# extract iceweasel's process id
+PID=$(ps -u cochrane -o pid,state,command | grep '\siceweasel' | grep -v grep | tr -s ' ' | cut -d' ' -f2)
+STATE_CHANGE="STOP"
+if [ "$1" == "cont" ]
+then
+    STATE_CHANGE="CONT"
+fi
+
+# change the process' state
+kill -${STATE_CHANGE} ${PID}
+
+# vim: expandtab shiftwidth=4
