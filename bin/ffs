@@ -1,18 +1,25 @@
-#!/bin/bash
+#!/usr/bin/env perl6
 
-# FFS: Firefox Stop; stops or continues a firefox process
-#
-# Usage: ffs [stop|cont|status]
+use v6;
 
-# extract iceweasel's process id
-PID=$(ps -u cochrane -o pid,state,command | grep '\siceweasel' | grep -v grep | tr -s ' ' | cut -d' ' -f2)
-STATE_CHANGE="STOP"
-if [ "$1" == "cont" ]
-then
-    STATE_CHANGE="CONT"
-fi
+=begin pod
+FFS: Firefox Stop; stops or continues a firefox process
 
-# change the process' state
-kill -${STATE_CHANGE} ${PID}
+Usage:
 
-# vim: expandtab shiftwidth=4
+    ffs --debug [stop|cont|status]
+=end pod
+
+sub MAIN($change-cmd = "stop") {
+    # extract iceweasel's process information
+    my $process-info = qx{ps -u cochrane -o pid,state,command | grep '\siceweasel' | grep -v grep}.trim;
+    my ($process-id, $process-state, $process-command) = $process-info.split(/\s+/);
+
+    my $state-change = $change-cmd eq "cont" ?? "CONT" !! "STOP";
+
+    # change the process' state
+    my $kill-command = "kill -$state-change $process-id";
+    qqx{$kill-command};
+}
+
+# vim: expandtab shiftwidth=4 ft=perl6
