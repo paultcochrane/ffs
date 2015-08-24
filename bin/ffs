@@ -3,7 +3,7 @@
 use v6;
 
 =begin pod
-FFS: Firefox Stop; stops or continues a firefox process
+FFS: Firefox Stop; stops or continues Firefox processes
 
 Usage:
 
@@ -15,13 +15,17 @@ our $debug;
 sub MAIN($ffs-cmd = "stop", :$debug = False) {
     say "ffs command: $ffs-cmd" if $debug;
 
-    my $process-info = qx{ps -u cochrane -o pid,state,command | grep '\siceweasel' | grep -v grep}.trim;
-    say "Process info: $process-info" if $debug;
-    my ($process-id, $process-state, $process-command) = $process-info.split(/\s+/);
+    my $ps-command = 'ps -u cochrane -o pid,state,command | grep \'\siceweasel\' | grep -v grep';
+    my @processes = qqx{$ps-command}.trim.split(/\n/);
+    say "Number of iceweasel processes: ", @processes.elems if $debug;
+    for @processes -> $process-info {
+        say "Process info: ", $process-info if $debug;
+        my ($process-id, $process-state, $process-command) = $process-info.split(/\s+/);
 
-    $ffs-cmd eq "status"
-        ?? print-status($process-state)
-        !! change-process-state($process-id, $ffs-cmd);
+        $ffs-cmd eq "status"
+            ?? print-status($process-state)
+            !! change-process-state($process-id, $ffs-cmd);
+    }
 }
 
 sub print-status($process-state) {
